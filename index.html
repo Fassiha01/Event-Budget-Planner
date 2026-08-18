@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventBudget Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="loader-ring">
+      <div></div><div></div><div></div><div></div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon"><i class="fas fa-calendar-check"></i></div>
+        <span class="logo-text">EventBudget<span class="logo-pro">Pro</span></span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+        <i class="fas fa-th-large"></i><span>Dashboard</span>
+      </a>
+      <a class="nav-item" data-page="events" onclick="navigate('events')">
+        <i class="fas fa-calendar-alt"></i><span>Events</span>
+      </a>
+      <a class="nav-item" data-page="expenses" onclick="navigate('expenses')">
+        <i class="fas fa-receipt"></i><span>Expenses</span>
+      </a>
+      <a class="nav-item" data-page="analytics" onclick="navigate('analytics')">
+        <i class="fas fa-chart-bar"></i><span>Analytics</span>
+      </a>
+      <a class="nav-item" data-page="reports" onclick="navigate('reports')">
+        <i class="fas fa-file-alt"></i><span>Reports</span>
+      </a>
+      <a class="nav-item" data-page="settings" onclick="navigate('settings')">
+        <i class="fas fa-cog"></i><span>Settings</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="user-avatar" id="user-avatar-icon"><i class="fas fa-user"></i></div>
+        <div class="user-info">
+          <span class="user-name" id="sidebar-user-name">Admin User</span>
+          <span class="user-role">Event Manager</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="page-title" id="page-title">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">
+          <i class="fas fa-moon"></i>
+        </button>
+        <div class="currency-badge" id="currency-badge">USD</div>
+      </div>
+    </header>
+
+    <!-- Pages -->
+    <div class="page-container">
+
+      <!-- DASHBOARD -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h1>Dashboard</h1>
+          <p class="page-subtitle">Overview of your event portfolio</p>
+        </div>
+        <div class="stats-grid" id="dashboard-stats"></div>
+        <div class="dashboard-grid">
+          <div class="glass-card">
+            <div class="card-header">
+              <h3><i class="fas fa-calendar-alt"></i> Recent Events</h3>
+              <button class="btn btn-sm btn-primary" onclick="navigate('events')">View All</button>
+            </div>
+            <div id="recent-events-list"></div>
+          </div>
+          <div class="glass-card">
+            <div class="card-header">
+              <h3><i class="fas fa-chart-pie"></i> Budget Overview</h3>
+            </div>
+            <div class="chart-container-sm">
+              <canvas id="dashboardPieChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card" style="margin-top:1.5rem">
+          <div class="card-header">
+            <h3><i class="fas fa-exclamation-triangle"></i> Over-Budget Alerts</h3>
+          </div>
+          <div id="over-budget-list"></div>
+        </div>
+      </section>
+
+      <!-- EVENTS -->
+      <section class="page" id="page-events">
+        <div class="page-header">
+          <div>
+            <h1>Events</h1>
+            <p class="page-subtitle">Manage all your events</p>
+          </div>
+          <button class="btn btn-primary" onclick="openCreateEvent()">
+            <i class="fas fa-plus"></i> New Event
+          </button>
+        </div>
+        <div class="glass-card">
+          <div class="toolbar">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" id="event-search" placeholder="Search events…" oninput="filterEvents()" />
+            </div>
+            <div class="filter-group">
+              <select id="filter-event-type" onchange="filterEvents()">
+                <option value="">All Types</option>
+                <option>Wedding</option>
+                <option>Birthday</option>
+                <option>Corporate</option>
+                <option>Conference</option>
+                <option>Party</option>
+                <option>Concert</option>
+                <option>Festival</option>
+                <option>Other</option>
+              </select>
+              <select id="filter-event-status" onchange="filterEvents()">
+                <option value="">All Status</option>
+                <option>Planning</option>
+                <option>Ongoing</option>
+                <option>Completed</option>
+              </select>
+              <input type="date" id="filter-event-date" onchange="filterEvents()" title="Filter by date" />
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="events-table">
+              <thead>
+                <tr>
+                  <th>Event Name</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th>Venue</th>
+                  <th>Guests</th>
+                  <th>Budget</th>
+                  <th>Spent</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="events-tbody"></tbody>
+            </table>
+            <div class="empty-state" id="events-empty" style="display:none">
+              <i class="fas fa-calendar-times"></i>
+              <p>No events found. Create your first event!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXPENSES -->
+      <section class="page" id="page-expenses">
+        <div class="page-header">
+          <div>
+            <h1>Expenses</h1>
+            <p class="page-subtitle" id="expenses-subtitle">Select an event to view expenses</p>
+          </div>
+          <div class="header-actions">
+            <select id="expense-event-selector" onchange="onExpenseEventChange()" class="event-selector">
+              <option value="">— Select Event —</option>
+            </select>
+            <button class="btn btn-primary" id="add-expense-btn" onclick="openCreateExpense()" style="display:none">
+              <i class="fas fa-plus"></i> Add Expense
+            </button>
+          </div>
+        </div>
+
+        <div class="budget-summary glass-card" id="budget-summary" style="display:none">
+          <div class="budget-item">
+            <span class="budget-label">Total Budget</span>
+            <span class="budget-value" id="bsum-budget">—</span>
+          </div>
+          <div class="budget-item">
+            <span class="budget-label">Total Spent</span>
+            <span class="budget-value text-danger" id="bsum-spent">—</span>
+          </div>
+          <div class="budget-item">
+            <span class="budget-label">Remaining</span>
+            <span class="budget-value text-success" id="bsum-remaining">—</span>
+          </div>
+          <div class="budget-item">
+            <span class="budget-label">Utilization</span>
+            <span class="budget-value" id="bsum-util">—</span>
+          </div>
+          <div class="budget-progress-wrap" id="budget-progress-wrap">
+            <div class="budget-progress-bar" id="budget-progress-bar"></div>
+          </div>
+        </div>
+
+        <div class="glass-card" id="expenses-card" style="display:none">
+          <div class="toolbar">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" id="expense-search" placeholder="Search expenses…" oninput="filterExpenses()" />
+            </div>
+            <div class="filter-group">
+              <select id="filter-expense-category" onchange="filterExpenses()">
+                <option value="">All Categories</option>
+                <option>Venue</option>
+                <option>Catering</option>
+                <option>Decoration</option>
+                <option>Photography</option>
+                <option>Entertainment</option>
+                <option>Transportation</option>
+                <option>Miscellaneous</option>
+              </select>
+              <input type="date" id="filter-expense-date" onchange="filterExpenses()" title="Filter by date" />
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="expenses-table">
+              <thead>
+                <tr>
+                  <th>Expense Name</th>
+                  <th>Category</th>
+                  <th>Cost</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="expenses-tbody"></tbody>
+            </table>
+            <div class="empty-state" id="expenses-empty" style="display:none">
+              <i class="fas fa-receipt"></i>
+              <p>No expenses yet. Add the first expense!</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state glass-card" id="expenses-no-event">
+          <i class="fas fa-hand-point-up"></i>
+          <p>Please select an event from the dropdown above to view and manage expenses.</p>
+        </div>
+      </section>
+
+      <!-- ANALYTICS -->
+      <section class="page" id="page-analytics">
+        <div class="page-header">
+          <h1>Analytics</h1>
+          <p class="page-subtitle">Insights across all your events</p>
+        </div>
+        <div class="stats-grid" id="analytics-stats"></div>
+        <div class="charts-grid">
+          <div class="glass-card">
+            <div class="card-header"><h3><i class="fas fa-chart-pie"></i> Spending by Category</h3></div>
+            <div class="chart-container"><canvas id="categoryChart"></canvas></div>
+          </div>
+          <div class="glass-card">
+            <div class="card-header"><h3><i class="fas fa-chart-doughnut"></i> Events by Status</h3></div>
+            <div class="chart-container"><canvas id="statusChart"></canvas></div>
+          </div>
+          <div class="glass-card chart-full">
+            <div class="card-header"><h3><i class="fas fa-chart-line"></i> Monthly Spending Trend</h3></div>
+            <div class="chart-container-lg"><canvas id="trendChart"></canvas></div>
+          </div>
+          <div class="glass-card">
+            <div class="card-header"><h3><i class="fas fa-calendar-check"></i> Events by Type</h3></div>
+            <div class="chart-container"><canvas id="typeChart"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REPORTS -->
+      <section class="page" id="page-reports">
+        <div class="page-header">
+          <h1>Reports</h1>
+          <p class="page-subtitle">Export and print your data</p>
+        </div>
+        <div class="reports-grid">
+          <div class="glass-card report-card">
+            <div class="report-icon"><i class="fas fa-calendar-alt"></i></div>
+            <h3>Events Report</h3>
+            <p>Full list of all events with budget and spending details.</p>
+            <div class="report-actions">
+              <button class="btn btn-primary" onclick="exportEventsCSV()">
+                <i class="fas fa-file-csv"></i> Export CSV
+              </button>
+              <button class="btn btn-secondary" onclick="printEventsReport()">
+                <i class="fas fa-print"></i> Print / PDF
+              </button>
+            </div>
+          </div>
+          <div class="glass-card report-card">
+            <div class="report-icon"><i class="fas fa-receipt"></i></div>
+            <h3>Expenses Report</h3>
+            <p>Detailed breakdown of all expenses across all events.</p>
+            <div class="report-actions">
+              <button class="btn btn-primary" onclick="exportExpensesCSV()">
+                <i class="fas fa-file-csv"></i> Export CSV
+              </button>
+              <button class="btn btn-secondary" onclick="printExpensesReport()">
+                <i class="fas fa-print"></i> Print / PDF
+              </button>
+            </div>
+          </div>
+          <div class="glass-card report-card">
+            <div class="report-icon"><i class="fas fa-chart-bar"></i></div>
+            <h3>Analytics Report</h3>
+            <p>Full analytics summary including charts and category breakdowns.</p>
+            <div class="report-actions">
+              <button class="btn btn-secondary" onclick="printAnalyticsReport()">
+                <i class="fas fa-print"></i> Print / PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="page" id="page-settings">
+        <div class="page-header">
+          <h1>Settings</h1>
+          <p class="page-subtitle">Manage your preferences</p>
+        </div>
+        <div class="settings-grid">
+          <div class="glass-card settings-card">
+            <div class="settings-section-title"><i class="fas fa-user-circle"></i> Profile</div>
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="settings-name" placeholder="Your name" />
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" id="settings-email" placeholder="your@email.com" />
+            </div>
+            <button class="btn btn-primary" onclick="saveProfile()">
+              <i class="fas fa-save"></i> Save Profile
+            </button>
+          </div>
+
+          <div class="glass-card settings-card">
+            <div class="settings-section-title"><i class="fas fa-lock"></i> Security</div>
+            <div class="form-group">
+              <label>Current Password</label>
+              <div class="input-icon">
+                <input type="password" id="current-password" placeholder="Current password" />
+                <i class="fas fa-eye toggle-pw" onclick="togglePw('current-password', this)"></i>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>New Password</label>
+              <div class="input-icon">
+                <input type="password" id="new-password" placeholder="New password" />
+                <i class="fas fa-eye toggle-pw" onclick="togglePw('new-password', this)"></i>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Confirm Password</label>
+              <div class="input-icon">
+                <input type="password" id="confirm-password" placeholder="Confirm password" />
+                <i class="fas fa-eye toggle-pw" onclick="togglePw('confirm-password', this)"></i>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="changePassword()">
+              <i class="fas fa-key"></i> Update Password
+            </button>
+          </div>
+
+          <div class="glass-card settings-card">
+            <div class="settings-section-title"><i class="fas fa-palette"></i> Appearance</div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Dark Mode</div>
+                <div class="toggle-desc">Switch between light and dark theme</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="settings-dark-mode" onchange="onDarkModeToggle()" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="glass-card settings-card">
+            <div class="settings-section-title"><i class="fas fa-dollar-sign"></i> Currency</div>
+            <div class="form-group">
+              <label>Select Currency</label>
+              <select id="settings-currency" onchange="onCurrencyChange()">
+                <option value="USD">USD — US Dollar ($)</option>
+                <option value="EUR">EUR — Euro (€)</option>
+                <option value="GBP">GBP — British Pound (£)</option>
+                <option value="INR">INR — Indian Rupee (₹)</option>
+                <option value="AED">AED — UAE Dirham (د.إ)</option>
+                <option value="SAR">SAR — Saudi Riyal (﷼)</option>
+                <option value="CAD">CAD — Canadian Dollar (CA$)</option>
+                <option value="AUD">AUD — Australian Dollar (A$)</option>
+                <option value="JPY">JPY — Japanese Yen (¥)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="glass-card settings-card">
+            <div class="settings-section-title"><i class="fas fa-bell"></i> Notifications</div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Email Notifications</div>
+                <div class="toggle-desc">Receive updates via email</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="settings-notif-email" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Budget Alerts</div>
+                <div class="toggle-desc">Alert when approaching budget limit</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="settings-notif-budget" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Event Reminders</div>
+                <div class="toggle-desc">Remind me before event dates</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="settings-notif-event" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <button class="btn btn-primary" onclick="saveNotifications()" style="margin-top:1rem">
+              <i class="fas fa-save"></i> Save Notifications
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- end page-container -->
+  </main>
+
+  <!-- ── MODALS ────────────────────────────────────────────────────── -->
+
+  <!-- Event Modal -->
+  <div class="modal-backdrop" id="event-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="event-modal-title">New Event</h2>
+        <button class="modal-close" onclick="closeModal('event-modal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="event-id" />
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Event Name <span class="required">*</span></label>
+            <input type="text" id="event-name" placeholder="e.g. Sarah's Wedding" />
+          </div>
+          <div class="form-group">
+            <label>Event Type <span class="required">*</span></label>
+            <select id="event-type">
+              <option value="">Select Type</option>
+              <option>Wedding</option>
+              <option>Birthday</option>
+              <option>Corporate</option>
+              <option>Conference</option>
+              <option>Party</option>
+              <option>Concert</option>
+              <option>Festival</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Event Date <span class="required">*</span></label>
+            <input type="date" id="event-date" />
+          </div>
+          <div class="form-group">
+            <label>Venue</label>
+            <input type="text" id="event-venue" placeholder="e.g. Grand Ballroom" />
+          </div>
+          <div class="form-group">
+            <label>Guest Count</label>
+            <input type="number" id="event-guests" placeholder="e.g. 200" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Total Budget <span class="required">*</span></label>
+            <input type="number" id="event-budget" placeholder="e.g. 50000" min="0" step="0.01" />
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="event-status">
+              <option value="Planning">Planning</option>
+              <option value="Ongoing">Ongoing</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div class="form-group form-full">
+            <label>Description</label>
+            <textarea id="event-description" placeholder="Brief description of the event…" rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('event-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveEvent()">
+          <i class="fas fa-save"></i> Save Event
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Event Modal -->
+  <div class="modal-backdrop" id="view-event-modal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2 id="view-event-title">Event Details</h2>
+        <button class="modal-close" onclick="closeModal('view-event-modal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="view-event-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('view-event-modal')">Close</button>
+        <button class="btn btn-secondary" id="view-edit-btn" onclick="">
+          <i class="fas fa-edit"></i> Edit Event
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expense Modal -->
+  <div class="modal-backdrop" id="expense-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="expense-modal-title">Add Expense</h2>
+        <button class="modal-close" onclick="closeModal('expense-modal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="expense-id" />
+        <div class="form-grid">
+          <div class="form-group form-full">
+            <label>Expense Name <span class="required">*</span></label>
+            <input type="text" id="expense-name" placeholder="e.g. Flower arrangement" />
+          </div>
+          <div class="form-group">
+            <label>Category <span class="required">*</span></label>
+            <select id="expense-category">
+              <option>Venue</option>
+              <option>Catering</option>
+              <option>Decoration</option>
+              <option>Photography</option>
+              <option>Entertainment</option>
+              <option>Transportation</option>
+              <option>Miscellaneous</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Cost <span class="required">*</span></label>
+            <input type="number" id="expense-cost" placeholder="e.g. 1500" min="0" step="0.01" />
+          </div>
+          <div class="form-group form-full">
+            <label>Date</label>
+            <input type="date" id="expense-date" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('expense-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveExpense()">
+          <i class="fas fa-save"></i> Save Expense
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-backdrop" id="confirm-modal">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>Confirm Delete</h2>
+        <button class="modal-close" onclick="closeModal('confirm-modal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-icon"><i class="fas fa-trash-alt"></i></div>
+        <p id="confirm-message" class="confirm-text">Are you sure you want to delete this item?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('confirm-modal')">Cancel</button>
+        <button class="btn btn-danger" id="confirm-action-btn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
